@@ -1,21 +1,20 @@
 from get_content import GetOlxContent
 from parser import parse_data, get_monthly_price
-from utils import get_urls_from_file
-from datetime import datetime, timedelta
+from utils import get_urls_from_file, is_today, get_today_filename, append_to_file
+from typing import List
 
 
-def is_today(date_str):
-    created_datetime = datetime.fromisoformat(date_str)
-    current_date = datetime.now().date()
-    return created_datetime.date() == current_date
+def daily_offer(data) -> List:
+    res = []
 
-
-def daily_offer(data):
     objects = parse_data(data)
 
     for object_ in objects:
         if is_today(object_.created_time):
-            yield f"{object_.url} | {object_.created_time} | {get_monthly_price(object_.price.value, object_.rent.value) if object_.price and object_.rent else None}"
+            text = f"{object_.url} | {object_.created_time} | {get_monthly_price(object_.price.value, object_.rent.value) if object_.price and object_.rent else None}"
+            res.append(text)
+
+    return res
 
 
 if __name__ == "__main__":
@@ -25,5 +24,7 @@ if __name__ == "__main__":
         scraper = GetOlxContent(url)
         data = scraper.fetch_content()
 
-        for result in daily_offer(data):
-            print(result)
+        filename = get_today_filename()
+        daily = daily_offer(data)
+        append_to_file(data=daily, filename=filename)
+

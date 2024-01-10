@@ -30,4 +30,5 @@ def main():
     logging.info("Scraping process completed.")
 
 
-main()
+if __name__ == "__main__":
+    main()

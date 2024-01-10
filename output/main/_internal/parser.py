@@ -1,9 +1,14 @@
+import datetime
 import logging
 from typing import List, Dict, Optional, Tuple, Generator
 
 import pandas
 
 from schemas import Params, Price, Object
+
+FILE_START = "olx"
+FILE_EXTENSION = ".xlsx"
+FILE_EXTENSION_CSV = ".csv"
 
 
 def parse_params(params) -> Tuple[List[Optional[Params]], Optional[Price], Optional[Price]]:
@@ -69,16 +74,32 @@ def parse_data(data: List[Dict]) -> Generator[Object, None, None]:
             )
 
 
+def generate_filename(type: str) -> str:
+    now = datetime.datetime.now()
+    if type == "xlsx":
+        return f"{FILE_START}_{now.strftime('%Y%m%d')}{FILE_EXTENSION}"
+    elif type == "csv":
+        return f"{FILE_START}_{now.strftime('%Y%m%d')}{FILE_EXTENSION_CSV}"
+
 def save_to_xlsx(data) -> bool:
     """
     Save parsed data to xlsx file
     """
     try:
         df = pandas.DataFrame(data)
-        df.to_excel("olx.xlsx", index=False)
+        df.to_excel(generate_filename("xlsx"), index=False)
         return True
     except Exception as e:
         logging.error(f"Error saving data to xlsx: {e}")
+        return False
+
+
+def save_to_csv(data) -> bool:
+    try:
+        df = pandas.DataFrame(data)
+        df.to_csv(generate_filename("csv"), index=False)
+    except Exception as e:
+        logging.error(f"Error saving data to csv: {e}")
         return False
 
 
@@ -128,9 +149,15 @@ def parser(data) -> bool:
             }
         )
 
-    save = save_to_xlsx(dicts)
-    if save:
+    save_excel = save_to_xlsx(dicts)
+    save_csv = save_to_csv(dicts)
+
+    if save_excel:
         logging.info("Data saved to xlsx file")
-        return True
     else:
-        return False
+        logging.error("Error saving data to xlsx file")
+
+    if save_csv:
+        logging.info("Data saved to csv file")
+    else:
+        logging.error("Error saving data to csv file")

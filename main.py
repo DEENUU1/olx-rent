@@ -1,5 +1,4 @@
 import logging
-
 from get_content import GetOlxContent
 from parser import parser
 from utils import get_urls_from_file

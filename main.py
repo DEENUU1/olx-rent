@@ -1,29 +1,29 @@
-import logging
+import os
 
-from get_content import GetOlxContent
-from parser import parser
-from utils import get_urls_from_file
+from dotenv import load_dotenv
+
+from google_sheet import GoogleSheet
+from olx import OLX
+
+load_dotenv()
+
+OLX_URL = os.getenv("OLX_URL")
+GOOGLE_SHEET_URL = os.getenv("GOOGLE_SHEET_URL")
 
 
-def main():
-    """
-    Executes the scraping process for each URL provided in the `URLS_TO_SCRAPE` dictionary.
-    """
-    logging.basicConfig(level=logging.INFO)
+def main() -> None:
+    olx = OLX()
+    offers = olx.scrape(OLX_URL, 3)
 
-    logging.info("Starting scraping process...")
+    for offer in offers:
+        google_sheet = GoogleSheet(GOOGLE_SHEET_URL)
 
-    urls = get_urls_from_file()
+        if google_sheet.data_exists(2, offer.url):
+            continue
 
-    for url in urls:
-        scraper = GetOlxContent(url)
-        data = scraper.fetch_content()
-        logging.info("Finished scraping")
+        google_sheet.add_data(data=offer)
 
-        logging.info("Start parsing scraped data")
-        parser(data)
-
-    logging.info("Scraping process completed.")
+    return
 
 
 if __name__ == "__main__":

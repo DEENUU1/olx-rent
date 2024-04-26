@@ -1,7 +1,7 @@
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Definition
 Set-Location -Path $scriptDirectory
 
-$venvPath = "venv\Scripts\Activate"
+$venvPath = ".venv\Scripts\Activate"
 if (Test-Path $venvPath) {
     Write-Host "Activating virtual environment..."
     & $venvPath
